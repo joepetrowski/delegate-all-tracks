@@ -41,36 +41,39 @@ fn main() -> Result<(), &'static str> {
     let prefs = user_inputs();
     let mut calls = Vec::new();
 
+    // Tracks from
+    // https://github.com/paritytech/polkadot/blob/release-v0.9.32/runtime/kusama/src/governance/tracks.rs#L288L318
+
     // Track 0: Root
-    add_delegation(&mut calls, 0, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 0, &prefs)?;
     // Track 1: Whitelisted Caller
-    add_delegation(&mut calls, 1, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 1, &prefs)?;
     // Track 10: Staking Admin
-    add_delegation(&mut calls, 10, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 10, &prefs)?;
     // Track 11: Treasurer
-    add_delegation(&mut calls, 11, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 11, &prefs)?;
     // Track 12: Lease Admin
-    add_delegation(&mut calls, 12, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 12, &prefs)?;
     // Track 13: Fellowship Admin
-    add_delegation(&mut calls, 13, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 13, &prefs)?;
     // Track 14: General Admin
-    add_delegation(&mut calls, 14, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 14, &prefs)?;
     // Track 15: Auction Admin
-    add_delegation(&mut calls, 15, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 15, &prefs)?;
     // Track 20: Referendum Canceller
-    add_delegation(&mut calls, 20, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 20, &prefs)?;
     // Track 21: Referendum Killer
-    add_delegation(&mut calls, 21, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 21, &prefs)?;
     // Track 30: Small Tipper
-    add_delegation(&mut calls, 30, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 30, &prefs)?;
     // Track 31: Big Tipper
-    add_delegation(&mut calls, 31, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 31, &prefs)?;
     // Track 32: Small Spender
-    add_delegation(&mut calls, 32, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 32, &prefs)?;
     // Track 33: Medium Spender
-    add_delegation(&mut calls, 33, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 33, &prefs)?;
     // Track 34: Big Spender
-    add_delegation(&mut calls, 34, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    add_delegation(&mut calls, 34, &prefs)?;
 
     let mut call = RuntimeCall::Utility(UtilityCall::batch {
         calls: calls.into_iter().map(RuntimeCall::ConvictionVoting).collect()
@@ -94,13 +97,11 @@ fn main() -> Result<(), &'static str> {
 fn add_delegation(
     calls: &mut Vec<ConvictionVotingCall>,
     class: u16,
-    to: &str,
-    conviction: u8,
-    balance: u128,
+    prefs: &UserInputs,
 ) -> Result<(), &'static str> {
-    let to = AccountId32::from_str(to)?;
+    let to = AccountId32::from_str(prefs.to.clone())?;
 
-    let conviction = match conviction {
+    let conviction = match prefs.conviction.clone() {
         0 => Conviction::None,
         1 => Conviction::Locked1x,
         2 => Conviction::Locked2x,
@@ -115,7 +116,7 @@ fn add_delegation(
         class,
         to: MultiAddress::Id(to),
         conviction,
-        balance,
+        balance: prefs.amount.clone(),
     });
     Ok(())
 }
