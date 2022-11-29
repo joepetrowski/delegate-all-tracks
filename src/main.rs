@@ -14,21 +14,26 @@ use kusama::runtime_types::{
     pallet_utility::pallet::Call as UtilityCall,
 };
 
+type Address = &'static str;
+
 struct UserInputs {
-    to: &'static str,
+    to: Address,
     conviction: u8,
     amount: u128,
+    as_proxy: Option<Address>,
 }
 
 fn user_inputs() -> UserInputs {
     let decimals: u128 = 10_u128.pow(12);
     return UserInputs {
-        // address
+        // Address to which to delegage votes.
         to: "GcDZZCVPwkPqoWxx8vfLb4Yfpz9yQ1f4XEyqngSH8ygsL9p",
-        // 0..=6
+        // Conviction, from 0 (0.1x) to 6 (6x).
         conviction: 1,
-        // KSM has 12 decimals
+        // Amount of KSM to delegage. KSM has 12 decimals.
         amount: 1 * decimals,
+        // Submit this call via proxy. Enter `Some("address")` if submitting via proxy.
+        as_proxy: None,
     }
 }
 
@@ -41,18 +46,46 @@ fn main() -> Result<(), &'static str> {
     // Track 1: Whitelisted Caller
     add_delegation(&mut calls, 1, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
     // Track 10: Staking Admin
+    add_delegation(&mut calls, 10, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
     // Track 11: Treasurer
+    add_delegation(&mut calls, 11, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
     // Track 12: Lease Admin
+    add_delegation(&mut calls, 12, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
     // Track 13: Fellowship Admin
+    add_delegation(&mut calls, 13, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
     // Track 14: General Admin
+    add_delegation(&mut calls, 14, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
     // Track 15: Auction Admin
+    add_delegation(&mut calls, 15, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    // Track 20: Referendum Canceller
+    add_delegation(&mut calls, 20, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    // Track 21: Referendum Killer
+    add_delegation(&mut calls, 21, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    // Track 30: Small Tipper
+    add_delegation(&mut calls, 30, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    // Track 31: Big Tipper
+    add_delegation(&mut calls, 31, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    // Track 32: Small Spender
+    add_delegation(&mut calls, 32, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    // Track 33: Medium Spender
+    add_delegation(&mut calls, 33, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
+    // Track 34: Big Spender
+    add_delegation(&mut calls, 34, &prefs.to, prefs.conviction.clone(), prefs.amount.clone())?;
 
-    let batch = RuntimeCall::Utility(UtilityCall::batch {
+    let mut call = RuntimeCall::Utility(UtilityCall::batch {
         calls: calls.into_iter().map(RuntimeCall::ConvictionVoting).collect()
     });
 
-    let bytes = batch.encode();
+    if let Some(proxied) = prefs.as_proxy {
+        let proxied = AccountId32::from_str(proxied)?;
+        call = RuntimeCall::Proxy(ProxyCall::proxy {
+            real: MultiAddress::Id(proxied),
+            force_proxy_type: None,
+            call: Box::new(call),
+        });
+    } 
 
+    let bytes = call.encode();
     println!("0x{}", hex::encode(bytes));
 
     Ok(())
@@ -80,7 +113,7 @@ fn add_delegation(
 
     calls.push(ConvictionVotingCall::delegate {
         class,
-        to: MultiAddress::Id(to.clone()),
+        to: MultiAddress::Id(to),
         conviction,
         balance,
     });
