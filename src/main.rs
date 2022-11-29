@@ -26,11 +26,11 @@ struct UserInputs {
 fn user_inputs() -> UserInputs {
     let decimals: u128 = 10_u128.pow(12);
     return UserInputs {
-        // Address to which to delegage votes.
+        // Address to which to delegate votes.
         to: "GcDZZCVPwkPqoWxx8vfLb4Yfpz9yQ1f4XEyqngSH8ygsL9p",
         // Conviction, from 0 (0.1x) to 6 (6x).
         conviction: 1,
-        // Amount of KSM to delegage. KSM has 12 decimals.
+        // Amount of KSM to delegate. KSM has 12 decimals.
         amount: 1 * decimals,
         // Submit this call via proxy. Enter `Some("address")` if submitting via proxy.
         as_proxy: None,
