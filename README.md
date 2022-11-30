@@ -15,12 +15,14 @@ fn user_inputs() -> UserInputs {
 	let decimals: u128 = 10_u128.pow(12);
 	return UserInputs {
 		// Address to which to delegate votes.
-		to: "GcDZZCVPwkPqoWxx8vfLb4Yfpz9yQ1f4XEyqngSH8ygsL9p",
-		// Conviction, from 0 (0.1x) to 6 (6x).
+		to: "your delegation here",
+		// Conviction, from 0 (0.1x), 1 (1x) to 6 (6x).
 		conviction: 1,
 		// Amount of KSM to delegate. KSM has 12 decimals.
 		amount: 1 * decimals,
-		// Submit this call via proxy. Enter `Some("address")` if submitting via proxy.
+		// Submit this call via proxy. Enter `Some("proxied address")` if submitting via proxy.
+		// Will not work until https://github.com/paritytech/polkadot/pull/6366 is in a runtime.
+		// Probably v9340 and higher.
 		as_proxy: None,
 	}
 }
